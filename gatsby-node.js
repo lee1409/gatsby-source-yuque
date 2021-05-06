@@ -1,35 +1,44 @@
 const yuqueTypes = require("./yuque-shema");
+const { createNodeHelpers } = require("gatsby-node-helpers");
+
 const SDK = require("@yuque/sdk");
+const DOC = "Doc";
 
-const client = new SDK({
-  token: "VQRBsdP5Z3fPzz53PZUeDJB5ayppbCf9B1SGJgl5",
-  // other options
-});
-
-exports.sourceNodes = ({ actions }, configOptions) => {
+exports.sourceNodes = (
+  { actions, createNodeId, createContentDigest },
+  configOptions
+) => {
   const { createNode } = actions;
 
+  const { createNodeFactory } = createNodeHelpers({
+    typePrefix: "Yuque",
+    createNodeId,
+    createContentDigest,
+  });
+
+  const DocNode = createNodeFactory(DOC);
+
+  const client = new SDK({
+    token: configOptions.token,
+  });
+
   const ignoreNotFoundElseRethrow = (err) => {
+    console.log(err);
     if (err && err.response && err.response.status !== 404) {
       throw err;
     }
   };
 
-  const fetchBook = client.repos
-    .list({
-      user: "u2373890",
-    })
-    .then((value) => {
-      console.log(value);
-    });
-
   const fetchDoc = client.docs
-    .list({ namespace: "u2373890/frontend" })
-    .then((value) => {
-      console.log(value);
-    });
+    .list({ namespace: configOptions.namespace })
+    .then((docs) => {
+      docs.forEach((doc) => {
+        createNode(DocNode(doc));
+      });
+    })
+    .catch(ignoreNotFoundElseRethrow);
 
-  return Promise.all([fetchBook, fetchDoc]);
+  return fetchDoc;
 };
 
 exports.createSchemaCustomization = ({ actions }) => {
