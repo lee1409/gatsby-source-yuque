@@ -1,6 +1,6 @@
 {
   "name": "@techberg/gatsby-source-yuque",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gatsby source plugin for pulling docs from Yuque",
   "main": "index.js",
   "scripts": {
