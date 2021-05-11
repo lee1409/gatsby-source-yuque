@@ -22,6 +22,9 @@ exports.sourceNodes = async (
 
   const client = new SDK({
     token: configOptions.token,
+    requestOpts: {
+      timeout: configOptions.timeout || 20000,
+    },
   });
 
   const ignoreNotFoundElseRethrow = (err) => {
