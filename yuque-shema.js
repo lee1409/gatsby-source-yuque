@@ -20,7 +20,7 @@ type YuqueDoc implements Node {
   draft_version: Int!
   last_editor_id: Int!
   word_count: Int!
-  cover: String!
+  cover: String
   custom_description: String
   last_editor: User
   book: Book
