@@ -1,7 +1,8 @@
-const yuqueTypes = require("./yuque-shema");
 const { createNodeHelpers } = require("gatsby-node-helpers");
-
+import { fetchRemoteFile } from "gatsby-core-utils";
 const SDK = require("@yuque/sdk");
+const yuqueTypes = require("./yuque-shema");
+
 const DOC = "Doc";
 const DOC_DETAIL = "DocDetail";
 
@@ -45,18 +46,32 @@ exports.sourceNodes = async (
     .catch(ignoreNotFoundElseRethrow);
 
   // Fetch all the document details
-  return await Promise.all(
+  const docDetails = await Promise.all(
     fetchDoc.map((docs) => {
       return client.docs.get({
         namespace: configOptions.namespace,
         slug: docs.slug,
       });
     })
-  ).then((docDetails) => {
-    docDetails.forEach((docDetail) => {
-      createNode(DocDetailNode(docDetail));
-    });
-  });
+  ).catch(ignoreNotFoundElseRethrow);
+
+  for (let docDetail of docDetails) {
+    // TODO parsing?
+    console.log(docDetail);
+    break;
+  }
+
+  return Promise.all(
+    docDetails.map((docDetail) => createNode(DocDetailNode(docDetail)))
+  );
+};
+
+exports.onCreateNode = async ({ node }) => {
+  if (node.internal.type !== "YuqueDocDetail") {
+    return;
+  }
+  console.log(node);
+  return;
 };
 
 exports.createSchemaCustomization = ({ actions }) => {
