@@ -20,6 +20,10 @@
     "type": "git",
     "url": "https://github.com/lee1409/gatsby-source-yuque.git"
   },
+  "files": [
+    "dist",
+    "gatsby-node.js"
+  ],
   "license": "MIT",
   "dependencies": {
     "@yuque/sdk": "^1.1.1",
