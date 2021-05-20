@@ -1,7 +1,13 @@
 const { createNodeHelpers } = require("gatsby-node-helpers");
 import { fetchRemoteFile } from "gatsby-core-utils";
-const SDK = require("@yuque/sdk");
-const yuqueTypes = require("./yuque-shema");
+import remark from "remark";
+import remarkImgLink from "./remark-img-links";
+import { createNodeHelpers } from "gatsby-node-helpers";
+import SDK from "@yuque/sdk";
+import yuqueTypes from "./yuque-schema";
+import stringify from "remark-stringify";
+import { fetchRemoteFile } from "gatsby-core-utils";
+import fromMarkDown from 'mdast-util-from-markdown';
 
 const DOC = "Doc";
 const DOC_DETAIL = "DocDetail";
