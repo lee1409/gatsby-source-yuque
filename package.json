@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel src --out-dir dist/ --ignore \"**/__tests__\" --extensions \".js\"",
     "prepare": "cross-env NODE_ENV=production npm run build",
-    "watch": "babel -w src --out-dir dist/ --ignore \"**/__tests__\" --extensions \".js\""
+    "watch": "babel -w src --out-dir dist/ --ignore \"**/__tests__\" --extensions \".js\"",
+    "release": "standard-version"
   },
   "keywords": [
     "gatsby",
