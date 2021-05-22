@@ -31,27 +31,21 @@ exports.sourceNodes = async (
     },
   });
 
-  const ignoreNotFoundElseRethrow = (err) => {
-    console.log(err);
-    if (err && err.response && err.response.status !== 404) {
-      throw err;
-    }
-  };
-
-  const fetchDoc = await client.docs.list({
+  // Get all the documents
+  const docs = await client.docs.list({
     namespace: configOptions.namespace,
   });
-  await Promise.all(fetchDoc.map((doc) => createNode(DocNode(doc))));
+  await Promise.all(docs.map((doc) => createNode(DocNode(doc))));
 
   // Fetch all the document details
   const docDetails = await Promise.all(
-    fetchDoc.map((docs) => {
+    docs.map((doc) => {
       return client.docs.get({
         namespace: configOptions.namespace,
-        slug: docs.slug,
+        slug: doc.slug,
       });
     })
-  ).catch(ignoreNotFoundElseRethrow);
+  );
 
   await Promise.all(
     docDetails.map((docDetail) => createNode(DocDetailNode(docDetail)))
