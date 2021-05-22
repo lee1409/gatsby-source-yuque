@@ -5,7 +5,6 @@ import fromMarkDown from "mdast-util-from-markdown";
 import toMarkdown from "mdast-util-to-markdown";
 import { createRemoteFileNode } from "gatsby-source-filesystem";
 import visitWithParents from "unist-util-visit-parents";
-import { slash } from 'gatsby-core-utils';
 
 const DOC = "Doc";
 const DOC_DETAIL = "DocDetail";
@@ -113,7 +112,7 @@ exports.onCreateNode = async ({
   let str = toMarkdown(tree);
   // Create a new node and form a new str
   // Form a node back to original
-  markdownNode.dir = slash(rootDir);
+  markdownNode.dir = rootDir;
   markdownNode.internal.content = str;
   markdownNode.internal.contentDigest = createContentDigest(markdownNode);
   await createNode(markdownNode);
