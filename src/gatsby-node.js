@@ -1,13 +1,11 @@
-const { createNodeHelpers } = require("gatsby-node-helpers");
-import { fetchRemoteFile } from "gatsby-core-utils";
-import remark from "remark";
-import remarkImgLink from "./remark-img-links";
 import { createNodeHelpers } from "gatsby-node-helpers";
 import SDK from "@yuque/sdk";
 import yuqueTypes from "./yuque-schema";
-import stringify from "remark-stringify";
-import { fetchRemoteFile } from "gatsby-core-utils";
-import fromMarkDown from 'mdast-util-from-markdown';
+import fromMarkDown from "mdast-util-from-markdown";
+import toMarkdown from "mdast-util-to-markdown";
+import { createRemoteFileNode } from "gatsby-source-filesystem";
+import visitWithParents from "unist-util-visit-parents";
+import { slash } from 'gatsby-core-utils';
 
 const DOC = "Doc";
 const DOC_DETAIL = "DocDetail";
@@ -17,7 +15,6 @@ exports.sourceNodes = async (
   configOptions
 ) => {
   const { createNode } = actions;
-
   const { createNodeFactory } = createNodeHelpers({
     typePrefix: "Yuque",
     createNodeId,
@@ -41,15 +38,10 @@ exports.sourceNodes = async (
     }
   };
 
-  const fetchDoc = await client.docs
-    .list({ namespace: configOptions.namespace })
-    .then((docs) => {
-      docs.forEach((doc) => {
-        createNode(DocNode(doc));
-      });
-      return docs;
-    })
-    .catch(ignoreNotFoundElseRethrow);
+  const fetchDoc = await client.docs.list({
+    namespace: configOptions.namespace,
+  });
+  await Promise.all(fetchDoc.map((doc) => createNode(DocNode(doc))));
 
   // Fetch all the document details
   const docDetails = await Promise.all(
@@ -61,23 +53,77 @@ exports.sourceNodes = async (
     })
   ).catch(ignoreNotFoundElseRethrow);
 
-  for (let docDetail of docDetails) {
-    // TODO parsing?
-    console.log(docDetail);
-    break;
-  }
-
-  return Promise.all(
+  await Promise.all(
     docDetails.map((docDetail) => createNode(DocDetailNode(docDetail)))
   );
 };
 
-exports.onCreateNode = async ({ node }) => {
+exports.onCreateNode = async ({
+  node,
+  cache,
+  actions,
+  createNodeId,
+  createContentDigest,
+}) => {
+  const { createNode, createParentChildLink } = actions;
   if (node.internal.type !== "YuqueDocDetail") {
     return;
   }
-  console.log(node);
-  return;
+
+  // Add support to extending markdown node
+  // Download required images into local
+  let tree = fromMarkDown(node.body);
+  let matches = [];
+
+  visitWithParents(tree, ["image"], function (node) {
+    matches.push(node);
+  });
+
+  let promises = [];
+  let rootDir;
+
+  const markdownNode = {
+    id: createNodeId(`${node.id} >>> YuqueMarkdown`),
+    children: [],
+    parent: node.id,
+    internal: {
+      type: `YuqueMarkdown`,
+      mediaType: "text/markdown",
+    },
+  };
+
+  // Downlaod all the images
+  // And change remote URL to local path
+  for (let match of matches) {
+    promises.push(
+      createRemoteFileNode({
+        url: match.url,
+        cache,
+        createNode,
+        createNodeId,
+        parentNodeId: markdownNode.id,
+      })
+        .then((fileNode) => {
+          // Need to make it the relative path
+          let path = fileNode.absolutePath.split("/");
+          let relativePath = path.slice(-2, fileNode.absolutePath.length);
+          match.url = relativePath.join("/");
+
+          if (!rootDir) rootDir = path.slice(0, -2).join('/');
+        })
+        .catch((err) => console.log(err))
+    );
+  }
+  await Promise.all(promises);
+
+  let str = toMarkdown(tree);
+  // Create a new node and form a new str
+  // Form a node back to original
+  markdownNode.dir = slash(rootDir);
+  markdownNode.internal.content = str;
+  markdownNode.internal.contentDigest = createContentDigest(markdownNode);
+  await createNode(markdownNode);
+  await createParentChildLink({ parent: node, child: markdownNode });
 };
 
 exports.createSchemaCustomization = ({ actions }) => {
