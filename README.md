@@ -1,5 +1,8 @@
 # Gatsby source yuque
 
+[![Publish npm](https://github.com/lee1409/gatsby-source-yuque/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/lee1409/gatsby-source-yuque/actions/workflows/npm-publish.yml)
+[![npm version](https://badge.fury.io/js/%40techberg%2Fgatsby-source-yuque.svg)](https://badge.fury.io/js/%40techberg%2Fgatsby-source-yuque)
+
 This plugins is used to fetch yuque documents into gatsby.
 
 ## Installation
