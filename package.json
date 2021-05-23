@@ -1,13 +1,14 @@
 {
   "name": "@techberg/gatsby-source-yuque",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Gatsby source plugin for pulling docs from Yuque",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel src --out-dir dist/ --ignore \"**/__tests__\" --extensions \".js\"",
     "prepare": "cross-env NODE_ENV=production npm run build",
-    "watch": "babel -w src --out-dir dist/ --ignore \"**/__tests__\" --extensions \".js\""
+    "watch": "babel -w src --out-dir dist/ --ignore \"**/__tests__\" --extensions \".js\"",
+    "release": "standard-version"
   },
   "keywords": [
     "gatsby",
@@ -45,7 +46,8 @@
     "@babel/core": "^7.12.3",
     "babel-preset-gatsby-package": "^1.3.0-next.0",
     "cross-env": "^7.0.3",
-    "jest": "^26.6.3"
+    "jest": "^26.6.3",
+    "standard-version": "^9.3.0"
   },
   "engines": {
     "node": ">=12.13.0"
