@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/lee1409/gatsby-source-yuque/compare/v0.2.3...v0.3.0) (2021-05-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* modify yuqueDocDetail to avoid creating markdown node
+
+### Features
+
+* added eslint ([abbdadb](https://github.com/lee1409/gatsby-source-yuque/commit/abbdadb2dfba1e28207eb37bdd71215e4e1f2b9e))
+
+
+* modify yuqueDocDetail to avoid creating markdown node ([f860e2e](https://github.com/lee1409/gatsby-source-yuque/commit/f860e2ec91750f6f962118fadad1d13edc196781))
+
 ### [0.2.3](https://github.com/lee1409/gatsby-source-yuque/compare/v0.2.2...v0.2.3) (2021-05-23)
 
 
