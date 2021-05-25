@@ -4,8 +4,7 @@
 name: Publish npm
 
 on:
-  release:
-    types: [created]
+  create
 
 jobs:
   build:
