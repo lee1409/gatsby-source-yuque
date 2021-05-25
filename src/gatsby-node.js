@@ -10,7 +10,7 @@ const DOC = "Doc";
 const DOC_DETAIL = "DocDetail";
 
 exports.sourceNodes = async (
-  { actions, createNodeId, createContentDigest },
+  { actions, createNodeId, createContentDigest, cache },
   configOptions
 ) => {
   const { createNode } = actions;
@@ -45,78 +45,50 @@ exports.sourceNodes = async (
       });
     })
   );
+  for (let docDetail of docDetails) {
+    let matches = [];
+    let promiseImages = [];
+    
+    docDetail = DocDetailNode(docDetail);
+    docDetail.dir = null;
 
-  await Promise.all(
-    docDetails.map((docDetail) => createNode(DocDetailNode(docDetail)))
-  );
-};
+    let tree = fromMarkDown(docDetail.body);
+    visitWithParents(tree, ["image"], function (node) {
+      matches.push(node);
+    });
 
-exports.onCreateNode = async ({
-  node,
-  cache,
-  actions,
-  createNodeId,
-  createContentDigest,
-}) => {
-  const { createNode, createParentChildLink } = actions;
-  if (node.internal.type !== "YuqueDocDetail") {
-    return;
-  }
-
-  // Add support to extending markdown node
-  // Download required images into local
-  let tree = fromMarkDown(node.body);
-  let matches = [];
-
-  visitWithParents(tree, ["image"], function (node) {
-    matches.push(node);
-  });
-
-  let promises = [];
-  let rootDir;
-
-  const markdownNode = {
-    id: createNodeId(`${node.id} >>> YuqueMarkdown`),
-    children: [],
-    parent: node.id,
-    internal: {
-      type: `YuqueMarkdown`,
-      mediaType: "text/markdown",
-    },
-  };
-
-  // Downlaod all the images
-  // And change remote URL to local path
-  for (let match of matches) {
-    promises.push(
-      createRemoteFileNode({
-        url: match.url,
-        cache,
-        createNode,
-        createNodeId,
-        parentNodeId: markdownNode.id,
-      })
-        .then((fileNode) => {
-          // Need to make it the relative path
-          let path = fileNode.absolutePath.split("/");
-          let relativePath = path.slice(-2, fileNode.absolutePath.length);
-          match.url = relativePath.join("/");
-
-          if (!rootDir) rootDir = path.slice(0, -2).join('/');
+    matches.forEach((match) => {
+      promiseImages.push(
+        createRemoteFileNode({
+          url: match.url,
+          cache,
+          createNode,
+          createNodeId,
+          parentNodeId: docDetail.id,
         })
-        .catch((err) => console.log(err))
-    );
-  }
-  await Promise.all(promises);
+          .then((fileNode) => {
+            // Need to make it the relative path
+            let path = fileNode.absolutePath.split("/");
+            let relativePath = path.slice(-2, fileNode.absolutePath.length);
+            match.url = relativePath.join("/");
 
-  let str = toMarkdown(tree);
-  // Create a new node and form a new str
-  // Form a node back to original
-  markdownNode.dir = rootDir;
-  markdownNode.internal.content = str;
-  markdownNode.internal.contentDigest = createContentDigest(markdownNode);
-  await createNode(markdownNode);
-  await createParentChildLink({ parent: node, child: markdownNode });
+            if (!docDetail.dir) docDetail.dir = path.slice(0, -2).join("/");
+          })
+          .catch((err) => console.error(err))
+      );
+    });
+
+    await Promise.all(promiseImages);
+
+    let output = toMarkdown(tree);
+    docDetail.internal = {
+      ...docDetail.internal,
+      content: output,
+      contentDigest: createContentDigest(output),
+      mediaType: "text/markdown",
+    };
+    createNode(docDetail);
+  }
 };
 
 exports.createSchemaCustomization = ({ actions }) => {
