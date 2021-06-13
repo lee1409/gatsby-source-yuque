@@ -138,6 +138,7 @@ The plugin is not guaranteed to work in the future if gatsby-transformer-remark 
 | ------------------------- | ------- |
 | gatsby-remark-images      | ^5.2.1  |
 | gatsby-transformer-remark | ^4.2.0  |
+| gatsby-remark-copy-linked-files | ^4.2.1 |
 
 ## FAQ
 
