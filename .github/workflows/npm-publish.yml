@@ -15,7 +15,8 @@ jobs:
         with:
           node-version: 12
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          NPM_TOKEN: ${{secrets.npm}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - run: npm install -g yarn
       - run: yarn install
-      - run: npm publish --access public
+      - run: npm publish --access public --dry-run
